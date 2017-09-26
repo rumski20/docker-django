@@ -8,13 +8,13 @@ version: "3"
 
 volumes:
     static-files:
-    
-    
+
+
 services:
     db:
-        image: postgres:9.6
+        image: postgres:9.6-alpine
         volumes:
-            - /opt/starter/psql:/var/lib/postgresql/data/pgdata
+            - /mnt/usr1/beav/docker/beaver-cland:/var/lib/postgresql/data/pgdata
         env_file:
             - ./config/environment/development.env
 
@@ -23,8 +23,8 @@ services:
             context: .
             dockerfile: services/webserver/Dockerfile
         ports:
-            - "80:80"
-            - "443:443"
+            - "80"
+            # - "443"
         depends_on:
             - webapp
         volumes:
@@ -36,7 +36,7 @@ services:
         build:
             context: webapp
         volumes:
-            - ./webapp/starter:/srv/starter
+            - /mnt/usr1/beav/site/cland/cland/clandsite:/srv/clandsite
             - static-files:/srv/static-files
         expose:
             - "8000"

@@ -1,16 +1,16 @@
-#!/bin/bash
+#!/bin/sh
 
 #####
 # Postgres: wait until container is created
-# 
+#
 # $?                most recent foreground pipeline exit status
 # > /dev/null 2>&1  get stderr while discarding stdout
 #####
 set -e
-python3 /srv/config/database-check.py > /dev/null 2>&1
+python /srv/config/database-check.py > /dev/null 2>&1
 while [[ $? != 0 ]] ; do
     sleep 5; echo "*** Waiting for postgres container ..."
-    python3 /srv/config/database-check.py > /dev/null 2>&1
+    python /srv/config/database-check.py > /dev/null 2>&1
 done
 set +e
 
@@ -24,7 +24,7 @@ if [ "$PRODUCTION" == "true" ]; then
     # and mark them as applied without running them. (Django won’t check that the
     # table schema match your models, just that the right table names exist).
     echo "==> Django setup, executing: migrate"
-    python3 /srv/${DJANGO_PROJECT_NAME}/manage.py migrate --fake-initial
+    python /srv/${DJANGO_PROJECT_NAME}/manage.py migrate --fake-initial
 
     # Django: collectstatic
     #
@@ -32,27 +32,33 @@ if [ "$PRODUCTION" == "true" ]; then
     # and the setting:
     # STATICFILES_STORAGE = 'storages.backends.s3boto.S3BotoStorage'
     echo "==> Django setup, executing: collectstatic"
-    python3 /srv/${DJANGO_PROJECT_NAME}/manage.py collectstatic --noinput -v 3
+    python /srv/${DJANGO_PROJECT_NAME}/manage.py collectstatic --noinput -v 3
 else
-    # Django: reset database
-    # https://docs.djangoproject.com/en/1.9/ref/django-admin/#flush
-    #
-    # This will give some errors when there is no database to be flushed, but
-    # you can ignore these messages.
-    echo "==> Django setup, executing: flush"
-    python3 /srv/${DJANGO_PROJECT_NAME}/manage.py flush --noinput
+    # # Django: reset database
+    # # https://docs.djangoproject.com/en/1.9/ref/django-admin/#flush
+    # #
+    # # This will give some errors when there is no database to be flushed, but
+    # # you can ignore these messages.
+    # echo "==> Django setup, executing: flush"
+    # python /srv/${DJANGO_PROJECT_NAME}/manage.py flush --noinput
 
-    # Django: migrate
-    #
-    # Django will see that the tables for the initial migrations already exist
-    # and mark them as applied without running them. (Django won’t check that the
-    # table schema match your models, just that the right table names exist).
-    echo "==> Django setup, executing: migrate"
-    python3 /srv/${DJANGO_PROJECT_NAME}/manage.py migrate --fake-initial
+    # # Django: migrate
+    # #
+    # # Django will see that the tables for the initial migrations already exist
+    # # and mark them as applied without running them. (Django won’t check that the
+    # # table schema match your models, just that the right table names exist).
+    # echo "==> Django setup, executing: migrate"
+    # python /srv/${DJANGO_PROJECT_NAME}/manage.py migrate --fake-initial
 
-    # Django: collectstatic
-    echo "==> Django setup, executing: collectstatic"
-    python3 /srv/${DJANGO_PROJECT_NAME}/manage.py collectstatic --noinput -v 3
+    # # Django: collectstatic
+    # echo "==> Django setup, executing: collectstatic"
+    # python /srv/${DJANGO_PROJECT_NAME}/manage.py collectstatic --noinput -v 3
+
+    # skip all that stuff up above that I don't understand
+    # and, instead, just load the data back into django's DB
+    echo "==> Django setup, executing: loaddata"
+    python /srv/${DJANGO_PROJECT_NAME}/manage.py loaddata -v 3 ./cland_dumpdata.json
+
 fi
 
 
@@ -61,3 +67,7 @@ fi
 #####
 echo "==> Starting uWSGI ..."
 /usr/local/bin/uwsgi --emperor /etc/uwsgi/django-uwsgi.ini
+stdout_logfile=/dev/stdout
+stdout_logfile_maxbytes=0
+stderr_logfile=/dev/stderr
+stderr_logfile_maxbytes=0

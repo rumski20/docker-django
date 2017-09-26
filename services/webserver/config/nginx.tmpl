@@ -5,7 +5,7 @@ events {
 
 http {
     # cf http://blog.maxcdn.com/accept-encoding-its-vary-important/
-    gzip_vary on; 
+    gzip_vary on;
     gzip_proxied any;
     gzip_types *;
 
@@ -14,29 +14,26 @@ http {
     ssl_session_timeout 10m;
 
     server_tokens off;
-    
+
     upstream django {
         server webapp:8000;
     }
 
     server {
         # rewrite all HTTP to HTTPS
-        listen 80;
+        listen 80 default_server;
+
         server_name ${NGINX_SERVER_NAME};
 
-        return 301 https://${NGINX_SERVER_NAME}$request_uri;
-    }
-
-    server {
-        listen 443 ssl default_server;
-        server_name ${NGINX_SERVER_NAME};
+        # logging
+        error_log /var/log/nginx/error.log error;
 
         # see http://nginx.org/en/docs/http/configuriNGINX_https_servers.html
-        ssl_certificate /etc/ssl/certs/${NGINX_CRT_NAME}.crt;
+<!--         ssl_certificate /etc/ssl/certs/${NGINX_CRT_NAME}.crt;
         ssl_certificate_key /etc/ssl/private/${NGINX_KEY_NAME}.key;
 
         ssl_prefer_server_ciphers on;
-        ssl_protocols TLSv1 TLSv1.1 TLSv1.2; # ie defaults minus SSLv3
+        ssl_protocols TLSv1 TLSv1.1 TLSv1.2; # ie defaults minus SSLv3 -->
 
         location /static {
             alias /srv/static-files;
@@ -47,7 +44,7 @@ http {
 
         location = /robots.txt { return 200 "User-agent: *\nAllow: /"; }
         location = /favicon.ico { access_log off; log_not_found off; return 404; }
-        
+
         #Prevent serving of sysfiles / vim backup files
         location ~ /\.          { access_log off; log_not_found off; deny all; }
         location ~ ~$           { access_log off; log_not_found off; deny all; }
