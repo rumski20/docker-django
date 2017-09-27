@@ -18,7 +18,11 @@ RUN apk --update --no-cache add \
     openjpeg-dev \
     tiff-dev \
     tk-dev \
-    tcl-dev
+    tcl-dev \
+    # added for debugging
+    bash nano
+    # might be needed for loading data
+    #postgresql-client
 
 # Get psycopg2 running on python-alpine
 # ref: https://stackoverflow.com/questions/41574928/psycopg2-installation-for-python2-7-alpine-in-docker
@@ -27,8 +31,15 @@ RUN apk --update --no-cache add \
     musl-dev \
     postgresql-dev
 
+# trying to get uwsgi running on python-alpine
+RUN apk --update --no-cache add \
+    build-base \
+    linux-headers \
+    pcre-dev
+
 # Add code
-ADD ./starter /srv/$DJANGO_PROJECT_NAME
+# mount code as volume on container
+#ADD ./starter /srv/$DJANGO_PROJECT_NAME
 
 # Install application requirements
 ADD ./config/requirements.txt /srv/$DJANGO_PROJECT_NAME/

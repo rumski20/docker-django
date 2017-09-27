@@ -1,0 +1,11 @@
+
+###########################################################
+# debugging webapp container
+
+docker-compose run \
+    --rm \
+    --service-ports \
+    --volume=/mnt/usr1/beav/site/cland/cland/clandsite:/srv/clandsite \
+    webapp \
+    sh
+

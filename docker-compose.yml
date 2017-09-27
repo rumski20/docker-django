@@ -15,6 +15,7 @@ services:
         image: postgres:9.6-alpine
         volumes:
             - /mnt/usr1/beav/docker/beaver-cland:/var/lib/postgresql/data/pgdata
+            - ./services/postgres:/docker-entrypoint-initdb.d
         env_file:
             - ./config/environment/development.env
 

@@ -28,7 +28,7 @@ def database_check():
 
     try:
         psycopg2.connect(
-            dbname=dbname,
+            database=dbname,
             user=user,
             password=password,
             host=host,
